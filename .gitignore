@@ -1,0 +1,40 @@
+# ── Python ───────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.env
+*.egg-info/
+dist/
+build/
+
+# ── Database ─────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── VSCode ───────────────────────────────────
+.vscode/
+*.code-workspace
+
+# ── OS ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ─────────────────────────────────────
+*.log
+logs/
+
+# ── Node (if you ever add a build step) ──────
+node_modules/
+
+# ── Claude / AI assistant files ──────────────
+CLAUDE.md
+.claude/
+
+# ── Playwright / test artifacts ──────────────
+.playwright-mcp/
