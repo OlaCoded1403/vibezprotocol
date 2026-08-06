@@ -4,6 +4,8 @@
 #  FastAPI Backend — Entry Point
 # ================================================================
 
+import sys
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +14,11 @@ from contextlib import asynccontextmanager
 
 from app.database import init_db
 from app.routes import contact, projects, admin, auth
+
+# Windows consoles default to cp1252 when stdout is piped, and the emoji in our
+# startup logs raise UnicodeEncodeError there — which would kill the app on boot.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 
 @asynccontextmanager

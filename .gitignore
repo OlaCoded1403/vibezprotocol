@@ -6,7 +6,10 @@ __pycache__/
 .Python
 venv/
 env/
+# Every .env variant (.env, .env.bak, .env.local, ...) except the committed template
 .env
+.env.*
+!.env.example
 *.egg-info/
 dist/
 build/
@@ -38,3 +41,4 @@ CLAUDE.md
 
 # ── Playwright / test artifacts ──────────────
 .playwright-mcp/
+

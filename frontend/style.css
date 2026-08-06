@@ -168,6 +168,9 @@ nav.scrolled {
 }
 
 .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.1rem;
@@ -176,7 +179,16 @@ nav.scrolled {
   text-decoration: none;
 }
 
-.nav-logo span {
+.nav-logo-mark {
+  height: 1.75rem;
+  width: auto;
+  display: block;
+  /* The mark carries its own purple; a faint glow ties it to the dark bg. */
+  filter: drop-shadow(0 0 10px rgba(124, 92, 252, 0.35));
+}
+
+/* Scoped to -text so it colours only "Protocol", not the wrapper span. */
+.nav-logo-text span {
   color: var(--accent);
 }
 
@@ -577,7 +589,7 @@ h1 { animation: fadeUp 0.6s 0.1s ease both; }
   background: rgba(124, 92, 252, 0.05);
 }
 
-.roadmap-label {
+.process-label {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--accent);
@@ -812,6 +824,9 @@ textarea.form-input {
 footer {
   border-top: 1px solid var(--border);
   padding: 2rem;
+  /* Clear the fixed WhatsApp button (58px + 1.75rem offset) so the copyright
+     line never runs underneath it. */
+  padding-right: calc(2rem + 58px + 1.25rem);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -820,13 +835,32 @@ footer {
   gap: 1rem;
 }
 
+@media (max-width: 600px) {
+  /* Footer stacks here, so the button overlaps the bottom rather than the
+     right — trade the side padding for clearance underneath. */
+  footer {
+    padding-right: 2rem;
+    padding-bottom: calc(2rem + 52px + 1.25rem);
+  }
+}
+
 .footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 0.95rem;
 }
 
-.footer-logo span {
+.footer-logo-mark {
+  height: 1.4rem;
+  width: auto;
+  display: block;
+  opacity: 0.9;
+}
+
+.footer-logo-text span {
   color: var(--accent);
 }
 

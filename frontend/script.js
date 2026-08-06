@@ -8,7 +8,7 @@
 // 🔑 LOCAL: leave as-is while developing on your PC
 // 🔑 DEPLOY: replace with your Render URL, e.g:
 //    'https://vibezprotocol-api.onrender.com/api'
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'http://localhost:8001/api';
 
 
 // ── 1. NAV — shrink on scroll ─────────────────────────────────────────────
@@ -98,16 +98,11 @@ if (contactForm) {
       });
 
       if (res.ok) {
-        console.log("SUCCESS RESPONSE");
-      
         showNote("Message received! We'll be in touch soon.", "success");
         contactForm.reset();
-      
       } else {
-        console.log("FAILED RESPONSE", res.status);
-      
         const err = await res.json().catch(() => ({}));
-        showNote(err.detail || "Something went wrong. Please try again.", "error");
+        showNote(readError(err), "error");
       }
 
     } catch {
@@ -124,6 +119,21 @@ if (contactForm) {
       submitBtn.disabled    = false;
     }
   });
+}
+
+// FastAPI sends plain strings for HTTPException but an array of objects for
+// validation failures — rendering that array directly prints "[object Object]".
+function readError(err) {
+  const detail = err && err.detail;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length) {
+    const field = detail[0].loc && detail[0].loc[detail[0].loc.length - 1];
+    const labels = { email: 'email address', name: 'name', subject: 'subject', message: 'message' };
+    return field
+      ? `Please check your ${labels[field] || field} and try again.`
+      : 'Please check your details and try again.';
+  }
+  return 'Something went wrong. Please try again.';
 }
 
 function showNote(message, type) {
