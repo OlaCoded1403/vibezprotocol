@@ -214,9 +214,10 @@
 
 <script>
   // ── CONFIG ─────────────────────────────────────────────────────────────
-  // 🔑 Change this to your Render URL after deploying:
-  //    const API = 'https://your-app-name.onrender.com/api';
-  const API = 'http://localhost:8001/api';
+  // Relative on purpose: this page is served by the same app as the API, so
+  // "/api" resolves correctly both locally and on any deployed host. Nothing
+  // to change when the domain changes.
+  const API = '/api';
 
   let token = localStorage.getItem('vp_admin_token') || '';
 

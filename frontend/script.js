@@ -8,7 +8,12 @@
 // 🔑 LOCAL: leave as-is while developing on your PC
 // 🔑 DEPLOY: replace with your Render URL, e.g:
 //    'https://vibezprotocol-api.onrender.com/api'
-const API_URL = 'http://localhost:8001/api';
+// The frontend is served from a different origin than the API, so this must be
+// absolute. Falls back to the local backend when opened from a file:// or
+// localhost origin, so development does not need an edit here.
+const API_URL = ['localhost', '127.0.0.1', ''].includes(location.hostname)
+  ? 'http://localhost:8001/api'
+  : 'https://vibezprotocol-api.onrender.com/api';
 
 
 // ── 1. NAV — shrink on scroll ─────────────────────────────────────────────
