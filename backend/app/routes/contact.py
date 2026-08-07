@@ -66,14 +66,17 @@ def send_email_notification(inquiry: Inquiry):
 
         msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as server:
             server.login(GMAIL_USER, GMAIL_PASSWORD)
             server.sendmail(GMAIL_USER, GMAIL_USER, msg.as_string())
 
-        print(f"✅ Email notification sent for inquiry from {inquiry.email}")
-
     except Exception as e:
-        print(f"❌ Email send failed: {e} — inquiry still saved to DB")
+        print(f"[email] send failed: {e} - inquiry still saved to DB")
+        return
+
+    # Logged outside the try: a failure to print must never be mistaken for a
+    # failure to send (a cp1252 console raises on emoji and did exactly that).
+    print(f"[email] notification sent for inquiry from {inquiry.email}")
 
 
 @router.post("", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
