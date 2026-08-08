@@ -4,6 +4,7 @@
 #  FastAPI Backend — Entry Point
 # ================================================================
 
+import os
 import sys
 
 from fastapi import FastAPI
@@ -37,11 +38,22 @@ app = FastAPI(
 )
 
 # ── CORS ─────────────────────────────────────────────────────────
-# 🔑 After deploying, replace "*" with your real frontend domain
-#    Example: allow_origins=["https://vibezprotocol.com"]
+# Only the frontend origins need access. /admin is served by this same app,
+# so it is same-origin and needs no entry here.
+# Override with an ALLOWED_ORIGINS env var (comma-separated) when the domain
+# changes — no code edit and no redeploy of the frontend required.
+DEFAULT_ORIGINS = ",".join([
+    "https://vibezprotocol.onrender.com",
+    "http://localhost:5501",       # VSCode Live Server
+    "http://127.0.0.1:5501",
+])
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv("ALLOWED_ORIGINS", DEFAULT_ORIGINS).split(",") if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
