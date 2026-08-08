@@ -23,6 +23,42 @@ GMAIL_USER     = os.getenv("GMAIL_USER",         "vibezprotocol@gmail.com")
 GMAIL_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
 
 
+# Bind the outgoing socket to an IPv4 wildcard. Container runtimes commonly
+# resolve AAAA records for smtp.gmail.com while having no IPv6 route, and the
+# connect then fails with "[Errno 101] Network is unreachable" before Gmail is
+# ever contacted. Binding to 0.0.0.0 keeps the socket on IPv4.
+_IPV4_ANY = ("0.0.0.0", 0)
+
+# 465 is implicit TLS, 587 is STARTTLS. Hosts that block one sometimes allow
+# the other, so try both before giving up.
+_ROUTES = (("smtp.gmail.com", 465, True), ("smtp.gmail.com", 587, False))
+
+
+def _deliver(raw_message: str) -> str:
+    """Send via the first SMTP route that works. Returns a label for logging."""
+    errors = []
+    for host, port, implicit_tls in _ROUTES:
+        try:
+            if implicit_tls:
+                server = smtplib.SMTP_SSL(host, port, timeout=20, source_address=_IPV4_ANY)
+            else:
+                server = smtplib.SMTP(host, port, timeout=20, source_address=_IPV4_ANY)
+            with server:
+                if not implicit_tls:
+                    server.starttls()
+                server.login(GMAIL_USER, GMAIL_PASSWORD)
+                server.sendmail(GMAIL_USER, GMAIL_USER, raw_message)
+            return f"{host}:{port}"
+        except Exception as exc:
+            errors.append(f"{port}: {type(exc).__name__} {exc}")
+
+    raise RuntimeError(
+        "all SMTP routes failed -> " + " | ".join(errors)
+        + " (if every route reports 'Network is unreachable', the host is "
+          "blocking outbound SMTP and an HTTP email API is needed instead)"
+    )
+
+
 def send_email_notification(inquiry: Inquiry):
     """Sends you an email when someone submits the contact form."""
     if not GMAIL_PASSWORD:
@@ -65,10 +101,7 @@ def send_email_notification(inquiry: Inquiry):
         """
 
         msg.attach(MIMEText(html, "html"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as server:
-            server.login(GMAIL_USER, GMAIL_PASSWORD)
-            server.sendmail(GMAIL_USER, GMAIL_USER, msg.as_string())
+        route = _deliver(msg.as_string())
 
     except Exception as e:
         print(f"[email] send failed: {e} - inquiry still saved to DB")
@@ -76,7 +109,7 @@ def send_email_notification(inquiry: Inquiry):
 
     # Logged outside the try: a failure to print must never be mistaken for a
     # failure to send (a cp1252 console raises on emoji and did exactly that).
-    print(f"[email] notification sent for inquiry from {inquiry.email}")
+    print(f"[email] notification for {inquiry.email} delivered via {route}")
 
 
 @router.post("", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
