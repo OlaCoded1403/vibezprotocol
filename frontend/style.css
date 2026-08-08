@@ -786,11 +786,20 @@ textarea.form-input {
   text-align: center;
   min-height: 1.2rem;
   margin-top: 0.5rem;
+  transition: opacity 0.3s ease;
   display: block;
 }
 
 .form-note.success { color: var(--accent); }
 .form-note.error   { color: #ff4d6d; }
+
+/* visibility rather than display:none — min-height above reserves the line, so
+   showing a message must not shove the form down. Also hides it from screen
+   readers, which opacity alone would not. */
+.form-note.is-hidden {
+  visibility: hidden;
+  opacity: 0;
+}
 
 .hidden {
   display: none;

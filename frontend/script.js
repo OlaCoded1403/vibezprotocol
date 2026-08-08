@@ -72,10 +72,6 @@ const contactForm = document.getElementById('contactForm');
 const submitBtn   = document.getElementById('submitBtn');
 const formNote    = document.getElementById('formNote');
 
-setTimeout(() => {
-  formNote.classList.add('hidden');
-}, 3000);
-
 if (contactForm) {
   contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -141,9 +137,16 @@ function readError(err) {
   return 'Something went wrong. Please try again.';
 }
 
+let noteTimer;
+
 function showNote(message, type) {
+  // Clear any pending hide, or a previous message's timer would cut this one short.
+  clearTimeout(noteTimer);
   formNote.textContent = message;
   formNote.className   = `form-note ${type}`;
+  // Errors linger — they usually ask the visitor to fix something.
+  noteTimer = setTimeout(() => formNote.classList.add('is-hidden'),
+                         type === 'error' ? 8000 : 5000);
 }
 
 
