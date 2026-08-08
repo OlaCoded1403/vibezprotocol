@@ -3,6 +3,8 @@
 # ================================================================
 
 import os
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
@@ -14,8 +16,12 @@ from app.utils import verify_password, hash_password, create_access_token
 
 load_dotenv()
 
-router       = APIRouter()
-SETUP_SECRET = os.getenv("SETUP_SECRET", "vibez-setup-2025")
+router = APIRouter()
+
+# No default on purpose. A fallback value here is published in the repo, so a
+# forgotten env var would silently leave setup gated by a public string rather
+# than a secret. Unset means the endpoint refuses to run at all.
+SETUP_SECRET = os.getenv("SETUP_SECRET", "")
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -41,7 +47,12 @@ async def setup_admin(
     URL:  POST /api/auth/setup?setup_key=YOUR_SETUP_SECRET
     Body: { "username": "olamilekan", "password": "yourpassword" }
     """
-    if setup_key != SETUP_SECRET:
+    if not SETUP_SECRET:
+        raise HTTPException(
+            status_code=503,
+            detail="Setup is disabled: SETUP_SECRET is not configured on this server.",
+        )
+    if not secrets.compare_digest(setup_key, SETUP_SECRET):
         raise HTTPException(status_code=403, detail="Invalid setup key")
     existing = db.query(AdminUser).filter(AdminUser.username == payload.username).first()
     if existing:
